@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件夹助手</title>
+</head>
+<body>
+  <div id="app">
+
+    <!-- WELCOME VIEW -->
+    <div id="welcome-view">
+      <div id="logo-wrap">
+        <canvas id="logo-canvas" width="80" height="80"></canvas>
+      </div>
+      <div id="input-bar">
+        <input type="text" id="input-field" placeholder="选择一个文件夹，启动 Claude Code ..." readonly>
+        <div id="input-actions">
+          <button id="btn-folder" class="action-btn" title="选择文件夹">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+          <button id="btn-settings-welcome" class="action-btn" title="设置">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- TERMINAL VIEW -->
+    <div id="terminal-view" class="hidden">
+      <div id="top-bar">
+        <div id="top-left">
+          <canvas id="top-logo" width="24" height="24"></canvas>
+          <span id="top-title">文件夹助手</span>
+        </div>
+        <div id="top-right">
+          <div id="top-folder-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+            <span id="top-folder-name">文件夹</span>
+          </div>
+          <button id="btn-settings-top" class="top-btn" title="设置">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>
+            </svg>
+          </button>
+          <button id="btn-change-folder" class="top-btn" title="切换文件夹">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div id="terminal-container"></div>
+    </div>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-mask" class="hidden">
+      <div id="settings-modal">
+        <h2>API 设置</h2>
+
+        <label for="setting-api-key">API 密钥</label>
+        <input type="password" id="setting-api-key" placeholder="sk-...">
+
+        <label for="setting-model">模型</label>
+        <select id="setting-model"></select>
+
+        <div id="settings-actions">
+          <button id="btn-settings-cancel" class="settings-btn btn-cancel">取消</button>
+          <button id="btn-settings-save" class="settings-btn btn-save">保存</button>
+        </div>
+
+        <p id="settings-hint">保存后需要重新打开文件夹才能生效</p>
+      </div>
+    </div>
+
+    <!-- ERROR OVERLAY -->
+    <div id="error-overlay" class="hidden">
+      <div id="error-content">
+        <div id="error-icon">!</div>
+        <h2>未找到 Claude CLI</h2>
+        <p id="error-message">Claude CLI 未安装或不在系统 PATH 中。</p>
+        <div id="install-box">
+          <p>请先安装 Claude Code：</p>
+          <code>npm install -g @anthropic-ai/claude-code</code>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

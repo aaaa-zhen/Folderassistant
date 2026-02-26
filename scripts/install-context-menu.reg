@@ -1,0 +1,15 @@
+Windows Registry Editor Version 5.00
+
+; Right-click on a folder
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\FolderAssistant]
+@="Open with Claude Code"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\shell\FolderAssistant\command]
+@="\"C:\\Program Files\\Folder Assistant\\FolderAssistant.exe\" \"%V\""
+
+; Right-click on folder background
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\FolderAssistant]
+@="Open with Claude Code"
+
+[HKEY_CURRENT_USER\Software\Classes\Directory\Background\shell\FolderAssistant\command]
+@="\"C:\\Program Files\\Folder Assistant\\FolderAssistant.exe\" \"%V\""

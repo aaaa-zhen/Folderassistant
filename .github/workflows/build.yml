@@ -1,0 +1,40 @@
+name: Build & Package
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: windows-latest
+            platform: win32
+          - os: macos-latest
+            platform: darwin
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Package app
+        run: npx electron-forge make
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: folder-assistant-${{ matrix.platform }}
+          path: out/make/**/*
+          if-no-files-found: warn
