@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import { app } from 'electron';
 
 export interface ClaudeDetectionResult {
   found: boolean;
@@ -30,25 +31,25 @@ export function detectClaude(): ClaudeDetectionResult {
     debug.push('System claude not in PATH');
   }
 
-  // 2. Try require.resolve at runtime
-  try {
-    const resolved = require.resolve('@anthropic-ai/claude-code/cli.js');
-    if (resolved && fs.existsSync(resolved)) {
-      debug.push('require.resolve found: ' + resolved);
-      writeDebug(debug);
-      return { found: true, mode: 'bundled', claudePath: resolved, error: null };
-    }
-  } catch {
-    debug.push('require.resolve failed');
-  }
+  // 2. Search for bundled @anthropic-ai/claude-code in app resources
+  const searchRoots = [
+    // Packaged app: resources/app/node_modules
+    path.resolve(app.getAppPath(), 'node_modules'),
+    // Packaged app alternative: next to .webpack
+    path.resolve(app.getAppPath(), '..', 'node_modules'),
+    // Dev mode: project root
+    path.resolve(__dirname, '..', '..', 'node_modules'),
+    path.resolve(__dirname, '..', '..', '..', 'node_modules'),
+    // cwd fallback
+    path.resolve(process.cwd(), 'node_modules'),
+  ];
 
-  // 3. Brute force search from cwd
-  const cwd = process.cwd();
-  debug.push('cwd: ' + cwd);
+  debug.push('app.getAppPath: ' + app.getAppPath());
+  debug.push('__dirname: ' + __dirname);
+  debug.push('cwd: ' + process.cwd());
 
-  const roots = [cwd, path.resolve(cwd, '..'), path.resolve(cwd, '..', '..')];
-  for (const root of roots) {
-    const candidate = path.join(root, 'node_modules', '@anthropic-ai', 'claude-code', 'cli.js');
+  for (const nm of searchRoots) {
+    const candidate = path.join(nm, '@anthropic-ai', 'claude-code', 'cli.js');
     const exists = fs.existsSync(candidate);
     debug.push(`${exists ? 'FOUND' : 'miss'}: ${candidate}`);
     if (exists) {

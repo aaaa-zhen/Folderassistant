@@ -23,10 +23,17 @@ module.exports = {
   },
   hooks: {
     packageAfterCopy: async (_config, buildPath) => {
-      const src = path.resolve(__dirname, 'node_modules', 'node-pty');
-      const dest = path.join(buildPath, 'node_modules', 'node-pty');
-      console.log(`[hook] Copying node-pty to ${dest}`);
-      copyDirSync(src, dest);
+      // Copy node-pty native module
+      const ptySrc = path.resolve(__dirname, 'node_modules', 'node-pty');
+      const ptyDest = path.join(buildPath, 'node_modules', 'node-pty');
+      console.log(`[hook] Copying node-pty to ${ptyDest}`);
+      copyDirSync(ptySrc, ptyDest);
+
+      // Copy @anthropic-ai/claude-code so bundled CLI works
+      const claudeSrc = path.resolve(__dirname, 'node_modules', '@anthropic-ai', 'claude-code');
+      const claudeDest = path.join(buildPath, 'node_modules', '@anthropic-ai', 'claude-code');
+      console.log(`[hook] Copying @anthropic-ai/claude-code to ${claudeDest}`);
+      copyDirSync(claudeSrc, claudeDest);
     },
   },
   makers: [
