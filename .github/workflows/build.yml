@@ -32,6 +32,29 @@ jobs:
       - name: Package app
         run: npx electron-forge make
 
+      - name: Ad-hoc sign macOS app
+        if: matrix.platform == 'darwin'
+        run: |
+          APP_PATH=$(find out -name "*.app" -type d | head -1)
+          if [ -n "$APP_PATH" ]; then
+            echo "Signing $APP_PATH"
+            codesign --force --deep --sign - "$APP_PATH"
+            echo "Signed successfully"
+          fi
+
+      - name: Re-zip signed macOS app
+        if: matrix.platform == 'darwin'
+        run: |
+          ZIP_PATH=$(find out/make -name "*.zip" | head -1)
+          APP_DIR=$(find out -name "*.app" -type d -path "*/darwin/*" | head -1)
+          if [ -n "$ZIP_PATH" ] && [ -n "$APP_DIR" ]; then
+            APP_PARENT=$(dirname "$APP_DIR")
+            rm "$ZIP_PATH"
+            cd "$APP_PARENT"
+            zip -r -y "$OLDPWD/$ZIP_PATH" "$(basename "$APP_DIR")"
+            echo "Re-zipped: $ZIP_PATH"
+          fi
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
