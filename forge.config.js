@@ -6,7 +6,6 @@ function copyDirSync(src, dest) {
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-    // Resolve symlinks
     const realSrc = fs.realpathSync(srcPath);
     if (fs.statSync(realSrc).isDirectory()) {
       copyDirSync(realSrc, destPath);
@@ -24,7 +23,6 @@ module.exports = {
   },
   hooks: {
     packageAfterCopy: async (_config, buildPath) => {
-      // Copy node-pty into the packaged app's node_modules
       const src = path.resolve(__dirname, 'node_modules', 'node-pty');
       const dest = path.join(buildPath, 'node_modules', 'node-pty');
       console.log(`[hook] Copying node-pty to ${dest}`);
@@ -36,6 +34,8 @@ module.exports = {
       name: '@electron-forge/maker-squirrel',
       config: {
         name: 'FolderAssistant',
+        authors: 'aaaa-zhen',
+        description: 'Launch Claude Code in any folder with a visual terminal',
       },
     },
     {

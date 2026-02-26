@@ -3,6 +3,7 @@
   "productName": "Folder Assistant",
   "version": "1.0.0",
   "description": "Launch Claude Code in any folder with a visual terminal",
+  "author": "aaaa-zhen",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
