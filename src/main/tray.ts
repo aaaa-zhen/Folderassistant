@@ -76,14 +76,50 @@ async function openFolderPicker(): Promise<void> {
 }
 
 function createTrayIcon(): Electron.NativeImage {
-  // Create a simple 16x16 colored square as tray icon
+  // 16x16 monochrome folder icon for menu bar / system tray
+  // 0 = transparent, 1 = icon color (white on dark, black on light — handled by template)
+  const pixels = [
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
+    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+  ];
+
   const size = 16;
   const buf = Buffer.alloc(size * size * 4);
-  for (let i = 0; i < size * size; i++) {
-    buf[i * 4] = 0x7a;       // R
-    buf[i * 4 + 1] = 0xa2;   // G
-    buf[i * 4 + 2] = 0xf7;   // B
-    buf[i * 4 + 3] = 0xff;   // A
+  for (let y = 0; y < size; y++) {
+    for (let x = 0; x < size; x++) {
+      const i = (y * size + x) * 4;
+      if (pixels[y][x] === 1) {
+        // On macOS template images use black pixels; the OS inverts for dark mode
+        // On Windows use white pixels for dark taskbar
+        if (process.platform === 'darwin') {
+          buf[i] = 0x00; buf[i+1] = 0x00; buf[i+2] = 0x00; buf[i+3] = 0xff;
+        } else {
+          buf[i] = 0xff; buf[i+1] = 0xff; buf[i+2] = 0xff; buf[i+3] = 0xff;
+        }
+      } else {
+        buf[i] = 0x00; buf[i+1] = 0x00; buf[i+2] = 0x00; buf[i+3] = 0x00;
+      }
+    }
   }
-  return nativeImage.createFromBuffer(buf, { width: size, height: size });
+
+  const icon = nativeImage.createFromBuffer(buf, { width: size, height: size });
+  // Mark as template image on macOS so it adapts to light/dark menu bar
+  if (process.platform === 'darwin') {
+    icon.setTemplateImage(true);
+  }
+  return icon;
 }

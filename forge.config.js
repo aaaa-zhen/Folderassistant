@@ -34,17 +34,17 @@ module.exports = {
       const claudeDest = path.join(buildPath, 'node_modules', '@anthropic-ai', 'claude-code');
       console.log(`[hook] Copying @anthropic-ai/claude-code to ${claudeDest}`);
       copyDirSync(claudeSrc, claudeDest);
+
+      // Copy @img/sharp-* optional dependencies (needed by claude-code on each platform)
+      const imgDir = path.resolve(__dirname, 'node_modules', '@img');
+      const imgDest = path.join(buildPath, 'node_modules', '@img');
+      if (fs.existsSync(imgDir)) {
+        console.log(`[hook] Copying @img/* to ${imgDest}`);
+        copyDirSync(imgDir, imgDest);
+      }
     },
   },
   makers: [
-    {
-      name: '@electron-forge/maker-squirrel',
-      config: {
-        name: 'FolderAssistant',
-        authors: 'aaaa-zhen',
-        description: 'Launch Claude Code in any folder with a visual terminal',
-      },
-    },
     {
       name: '@electron-forge/maker-zip',
       platforms: ['darwin', 'win32'],

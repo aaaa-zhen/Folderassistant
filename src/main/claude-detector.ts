@@ -1,6 +1,7 @@
 import { execSync } from 'child_process';
 import path from 'path';
 import fs from 'fs';
+import os from 'os';
 import { app } from 'electron';
 
 export interface ClaudeDetectionResult {
@@ -69,7 +70,8 @@ export function detectClaude(): ClaudeDetectionResult {
 
 function writeDebug(lines: string[]): void {
   try {
-    fs.writeFileSync('/tmp/claude-detector-debug.log', lines.join('\n') + '\n');
+    const logPath = path.join(os.tmpdir(), 'claude-detector-debug.log');
+    fs.writeFileSync(logPath, lines.join('\n') + '\n');
   } catch {
     // ignore
   }

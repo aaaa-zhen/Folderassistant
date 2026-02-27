@@ -41,49 +41,68 @@ export function registerIpcHandlers(): void {
     // Load user settings for API config
     const settings = loadSettings();
 
+    const env = { ...process.env } as Record<string, string>;
+    delete env.CLAUDECODE;
+    delete env.CLAUDE_CODE;
+    env.TERM = 'xterm-256color';
+    env.COLORTERM = 'truecolor';
+
+    // Apply user API settings
+    if (settings.apiKey) {
+      env.ANTHROPIC_AUTH_TOKEN = settings.apiKey;
+    }
+    if (settings.baseUrl) {
+      env.ANTHROPIC_BASE_URL = settings.baseUrl;
+    }
+    if (settings.model) {
+      env.ANTHROPIC_MODEL = settings.model;
+    }
+    if (settings.disableNonessentialTraffic) {
+      env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
+    }
+
     if (detection.mode === 'system') {
       shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/zsh';
       shellArgs = process.platform === 'win32'
         ? ['/c', 'claude']
         : ['-l', '-c', 'claude'];
     } else if (detection.mode === 'bundled' && detection.claudePath) {
+      // Use Electron as Node.js to run the bundled CLI
       shell = process.execPath;
       shellArgs = [detection.claudePath];
+      env.ELECTRON_RUN_AS_NODE = '1';
+      // Ensure ESM works: Node needs --experimental-vm-modules or correct package.json
+      env.NODE_NO_WARNINGS = '1';
     } else {
       throw new Error('Claude CLI not available');
     }
+
+    // Log spawn info for debugging
+    const debugInfo = {
+      mode: detection.mode,
+      shell,
+      shellArgs,
+      claudePath: detection.claudePath,
+      execPath: process.execPath,
+      platform: process.platform,
+      nodeVersion: process.version,
+    };
+    try {
+      const os = require('os');
+      const fs = require('fs');
+      const path = require('path');
+      fs.writeFileSync(
+        path.join(os.tmpdir(), 'folder-assistant-spawn.log'),
+        JSON.stringify(debugInfo, null, 2) + '\n'
+      );
+    } catch {}
 
     const ptyProcess = pty.spawn(shell, shellArgs, {
       name: 'xterm-256color',
       cols: 80,
       rows: 24,
       cwd: folderPath,
-      env: (() => {
-        const env = { ...process.env } as Record<string, string>;
-        delete env.CLAUDECODE;
-        delete env.CLAUDE_CODE;
-        env.TERM = 'xterm-256color';
-        env.COLORTERM = 'truecolor';
-
-        // Apply user API settings
-        if (settings.apiKey) {
-          env.ANTHROPIC_AUTH_TOKEN = settings.apiKey;
-        }
-        if (settings.baseUrl) {
-          env.ANTHROPIC_BASE_URL = settings.baseUrl;
-        }
-        if (settings.model) {
-          env.ANTHROPIC_MODEL = settings.model;
-        }
-        if (settings.disableNonessentialTraffic) {
-          env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
-        }
-
-        if (detection.mode === 'bundled') {
-          env.ELECTRON_RUN_AS_NODE = '1';
-        }
-        return env;
-      })(),
+      env,
     });
 
     ptyProcesses.set(windowId, ptyProcess);
