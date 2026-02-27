@@ -71,6 +71,7 @@ export function createTerminalWindow(folderPath: string): BrowserWindow {
 
   win.once('ready-to-show', () => {
     win.show();
+    if (process.platform === 'win32') win.webContents.openDevTools({ mode: 'detach' });
   });
 
   win.on('closed', () => {

@@ -83,9 +83,12 @@ export function registerIpcHandlers(): void {
       const fs = require('fs');
       const launcherPath = path.join(os.tmpdir(), 'fa-claude-launcher.cjs');
       const cliFileUrl = 'file:///' + detection.claudePath.replace(/\\/g, '/');
-      fs.writeFileSync(launcherPath,
-        `import(${JSON.stringify(cliFileUrl)}).catch(e => { console.error(e); process.exit(1); });\n`
-      );
+      // Rewrite process.argv so cli.js sees itself as the script + any flags
+      const launcherCode = [
+        `process.argv = [process.argv[0], ${JSON.stringify(detection.claudePath)}, ...process.argv.slice(2)];`,
+        `import(${JSON.stringify(cliFileUrl)}).catch(e => { console.error(e); process.exit(1); });`,
+      ].join('\n');
+      fs.writeFileSync(launcherPath, launcherCode + '\n');
 
       shell = process.execPath;
       shellArgs = [launcherPath, ...extraFlags];
