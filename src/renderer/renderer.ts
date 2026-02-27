@@ -167,8 +167,8 @@ async function init(): Promise<void> {
   btnFolder.addEventListener('click', (e) => { e.stopPropagation(); pickFolder(); });
   btnChangeFolder.addEventListener('click', pickFolder);
 
-  // Check for updates
-  checkUpdates();
+  // Check for updates (non-blocking, delayed)
+  setTimeout(() => checkUpdates(), 2000);
 
   if (currentFolder) {
     await startTerminal(currentFolder);
