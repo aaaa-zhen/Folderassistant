@@ -1,6 +1,7 @@
 import { Terminal } from '@xterm/xterm';
 import { FitAddon } from '@xterm/addon-fit';
 import { WebLinksAddon } from '@xterm/addon-web-links';
+import { WebglAddon } from '@xterm/addon-webgl';
 
 declare global {
   interface Window {
@@ -63,6 +64,18 @@ export class TerminalManager {
     this.terminal.loadAddon(this.fitAddon);
     this.terminal.loadAddon(new WebLinksAddon());
     this.terminal.open(container);
+
+    // WebGL renderer for GPU-accelerated rendering
+    try {
+      const webglAddon = new WebglAddon();
+      webglAddon.onContextLoss(() => {
+        webglAddon.dispose();
+      });
+      this.terminal.loadAddon(webglAddon);
+    } catch {
+      // fallback to canvas renderer
+    }
+
     this.fitAddon.fit();
 
     this.terminal.onData((data) => {

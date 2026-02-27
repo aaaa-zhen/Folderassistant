@@ -54,30 +54,34 @@ export function registerIpcHandlers(): void {
     if (settings.baseUrl) {
       env.ANTHROPIC_BASE_URL = settings.baseUrl;
     }
-    if (settings.model) {
-      env.ANTHROPIC_MODEL = settings.model;
-    }
+    // Model will be passed via --model flag below
     if (settings.disableNonessentialTraffic) {
       env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
     }
 
+    // Build extra CLI flags
+    const extraFlags: string[] = ['--trust-workspace'];
+    if (settings.model) {
+      extraFlags.push('--model', settings.model);
+    }
+    const extraFlagsStr = ' ' + extraFlags.join(' ');
+
     if (detection.mode === 'system') {
       shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/zsh';
       shellArgs = process.platform === 'win32'
-        ? ['/c', 'claude']
-        : ['-l', '-c', 'claude'];
+        ? ['/c', `claude${extraFlagsStr}`]
+        : ['-l', '-c', `claude${extraFlagsStr}`];
     } else if (detection.mode === 'bundled' && detection.claudePath) {
       // Use Electron as Node.js to run the bundled CLI
       env.ELECTRON_RUN_AS_NODE = '1';
       env.NODE_NO_WARNINGS = '1';
 
       if (process.platform === 'win32') {
-        // On Windows, use cmd.exe to launch Electron-as-Node with proper quoting
         shell = 'cmd.exe';
-        shellArgs = ['/c', `"${process.execPath}" "${detection.claudePath}"`];
+        shellArgs = ['/c', `"${process.execPath}" "${detection.claudePath}"${extraFlagsStr}`];
       } else {
         shell = process.execPath;
-        shellArgs = [detection.claudePath];
+        shellArgs = [detection.claudePath, ...extraFlags];
       }
     } else {
       throw new Error('Claude CLI 不可用');
