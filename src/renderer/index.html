@@ -62,6 +62,7 @@
     <!-- SETTINGS MODAL -->
     <div id="settings-mask" class="hidden">
       <div id="settings-modal">
+        <button id="btn-settings-close" class="modal-close" title="关闭">&times;</button>
         <h2>API 设置</h2>
 
         <label for="setting-api-key">API 密钥</label>
@@ -76,6 +77,24 @@
         </div>
 
         <p id="settings-hint">保存后需要重新打开文件夹才能生效</p>
+
+        <div id="settings-divider"></div>
+        <button id="btn-check-update" class="settings-btn btn-cancel" style="width:100%">检查更新</button>
+        <p id="version-info"></p>
+      </div>
+    </div>
+
+    <!-- UPDATE MODAL -->
+    <div id="update-mask" class="hidden">
+      <div id="update-modal">
+        <div id="update-icon">🎉</div>
+        <h2>发现新版本</h2>
+        <p id="update-version"></p>
+        <p id="update-changelog"></p>
+        <div id="update-actions">
+          <button id="btn-update-later" class="settings-btn btn-cancel">稍后</button>
+          <button id="btn-update-now" class="settings-btn btn-save">立即更新</button>
+        </div>
       </div>
     </div>
 

@@ -106,8 +106,35 @@ async function init(): Promise<void> {
 
   btnSettingsWelcome.addEventListener('click', (e) => { e.stopPropagation(); openSettings(); });
   btnSettingsTop.addEventListener('click', openSettings);
+  const btnSettingsClose = document.getElementById('btn-settings-close') as HTMLButtonElement;
+  btnSettingsClose.addEventListener('click', closeSettings);
   btnSettingsCancel.addEventListener('click', closeSettings);
   settingsMask.addEventListener('click', (e) => { if (e.target === settingsMask) closeSettings(); });
+
+  // Check update button in settings
+  const btnCheckUpdate = document.getElementById('btn-check-update') as HTMLButtonElement;
+  const versionInfo = document.getElementById('version-info') as HTMLParagraphElement;
+
+  btnCheckUpdate.addEventListener('click', async () => {
+    btnCheckUpdate.textContent = '检查中...';
+    btnCheckUpdate.disabled = true;
+    try {
+      const info = await window.folderAssistant.checkForUpdates();
+      if (info.hasUpdate) {
+        versionInfo.textContent = '';
+        closeSettings();
+        showUpdateModal(info);
+      } else {
+        versionInfo.textContent = `当前版本 ${info.currentVersion}，已是最新`;
+        versionInfo.style.color = '#9ece6a';
+      }
+    } catch {
+      versionInfo.textContent = '检查失败，请稍后重试';
+      versionInfo.style.color = '#f7768e';
+    }
+    btnCheckUpdate.textContent = '检查更新';
+    btnCheckUpdate.disabled = false;
+  });
 
   btnSettingsSave.addEventListener('click', async () => {
     await window.folderAssistant.saveSettings({
@@ -140,6 +167,9 @@ async function init(): Promise<void> {
   btnFolder.addEventListener('click', (e) => { e.stopPropagation(); pickFolder(); });
   btnChangeFolder.addEventListener('click', pickFolder);
 
+  // Check for updates
+  checkUpdates();
+
   if (currentFolder) {
     await startTerminal(currentFolder);
   }
@@ -166,6 +196,37 @@ async function init(): Promise<void> {
     terminalManager = new TerminalManager(terminalContainer);
     await terminalManager.start(folder);
     terminalManager.focus();
+  }
+
+  // Update modal elements
+  const updateMask = document.getElementById('update-mask') as HTMLDivElement;
+  const updateVersion = document.getElementById('update-version') as HTMLParagraphElement;
+  const updateChangelog = document.getElementById('update-changelog') as HTMLParagraphElement;
+  const btnUpdateLater = document.getElementById('btn-update-later') as HTMLButtonElement;
+  const btnUpdateNow = document.getElementById('btn-update-now') as HTMLButtonElement;
+  let pendingDownloadUrl = '';
+
+  btnUpdateLater.addEventListener('click', () => { updateMask.classList.add('hidden'); });
+  btnUpdateNow.addEventListener('click', () => {
+    if (pendingDownloadUrl) window.folderAssistant.openDownloadUrl(pendingDownloadUrl);
+    updateMask.classList.add('hidden');
+  });
+  updateMask.addEventListener('click', (e) => { if (e.target === updateMask) updateMask.classList.add('hidden'); });
+
+  function showUpdateModal(info: { currentVersion: string; latestVersion?: string; changelog?: string; downloadUrl?: string }): void {
+    updateVersion.textContent = `${info.currentVersion} → ${info.latestVersion}`;
+    updateChangelog.textContent = info.changelog || '';
+    pendingDownloadUrl = info.downloadUrl || '';
+    updateMask.classList.remove('hidden');
+  }
+
+  async function checkUpdates(): Promise<void> {
+    try {
+      const info = await window.folderAssistant.checkForUpdates();
+      if (info.hasUpdate) showUpdateModal(info);
+    } catch {
+      // silently ignore
+    }
   }
 
   window.addEventListener('focus', () => {

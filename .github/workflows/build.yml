@@ -55,9 +55,63 @@ jobs:
             echo "Re-zipped: $ZIP_PATH"
           fi
 
-      - name: Upload artifacts
+      - name: Rename zip for deploy
+        shell: bash
+        run: |
+          ZIP_PATH=$(find out/make -name "*.zip" | head -1)
+          if [ -n "$ZIP_PATH" ]; then
+            cp "$ZIP_PATH" "FolderAssistant-${{ matrix.platform }}.zip"
+          fi
+
+      - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: folder-assistant-${{ matrix.platform }}
-          path: out/make/**/*
+          path: FolderAssistant-${{ matrix.platform }}.zip
           if-no-files-found: warn
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+
+      - name: Upload to server
+        run: |
+          for f in artifacts/*/FolderAssistant-*.zip; do
+            echo "Uploading $f ..."
+            sshpass -p '${{ secrets.SERVER_PASSWORD }}' scp -o StrictHostKeyChecking=no \
+              "$f" root@43.134.52.155:/root/pi-mono/apk/folder-assistant/downloads/
+          done
+          echo "All files uploaded"
+
+      - name: Update version.json
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          IFS='.' read -r major minor patch <<< "$VERSION"
+          VERSION_CODE=$(( ${major:-0} * 10000 + ${minor:-0} * 100 + ${patch:-0} ))
+
+          # Use first line of commit message as changelog
+          CHANGELOG=$(echo "${{ github.event.head_commit.message }}" | head -1 | sed 's/"/\\"/g')
+
+          sshpass -p '${{ secrets.SERVER_PASSWORD }}' ssh -o StrictHostKeyChecking=no root@43.134.52.155 "cat > /root/pi-mono/apk/folder-assistant/version.json << 'JSONEOF'
+          {
+            \"versionCode\": ${VERSION_CODE},
+            \"versionName\": \"${VERSION}\",
+            \"changelog\": \"${CHANGELOG}\",
+            \"downloads\": {
+              \"win32\": \"http://43.134.52.155:3000/fa-downloads/FolderAssistant-win32.zip\",
+              \"darwin\": \"http://43.134.52.155:3000/fa-downloads/FolderAssistant-darwin.zip\"
+            }
+          }
+          JSONEOF"
+          echo "Updated version.json: v${VERSION} (code: ${VERSION_CODE})"

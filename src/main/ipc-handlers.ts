@@ -1,7 +1,8 @@
-import { ipcMain, dialog, app, IpcMainInvokeEvent, IpcMainEvent } from 'electron';
+import { ipcMain, dialog, app, shell, IpcMainInvokeEvent, IpcMainEvent } from 'electron';
 import * as pty from 'node-pty';
 import { detectClaude } from './claude-detector';
 import { loadSettings, saveSettings, getAvailableModels, AppSettings } from './settings';
+import { checkForUpdates } from './updater';
 
 const ptyProcesses = new Map<number, pty.IPty>();
 
@@ -60,11 +61,11 @@ export function registerIpcHandlers(): void {
     }
 
     // Build extra CLI flags
-    const extraFlags: string[] = ['--trust-workspace'];
+    const extraFlags: string[] = [];
     if (settings.model) {
       extraFlags.push('--model', settings.model);
     }
-    const extraFlagsStr = ' ' + extraFlags.join(' ');
+    const extraFlagsStr = extraFlags.length > 0 ? ' ' + extraFlags.join(' ') : '';
 
     if (detection.mode === 'system') {
       shell = process.platform === 'win32' ? 'cmd.exe' : '/bin/zsh';
@@ -145,6 +146,14 @@ export function registerIpcHandlers(): void {
       ptyProcess.kill();
       ptyProcesses.delete(event.sender.id);
     }
+  });
+
+  ipcMain.handle('updater:check', async () => {
+    return checkForUpdates();
+  });
+
+  ipcMain.handle('updater:openDownload', async (_event, url: string) => {
+    shell.openExternal(url);
   });
 
   ipcMain.handle('dialog:openFolder', async () => {

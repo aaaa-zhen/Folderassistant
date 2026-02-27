@@ -331,6 +331,34 @@ html, body {
   transform: translateY(0) scale(1);
 }
 
+.modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-sec);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.modal-close:hover {
+  background: rgba(255,255,255,.08);
+  color: var(--text);
+}
+
+#settings-modal {
+  position: relative;
+}
+
 #settings-modal h2 {
   font-size: 17px;
   font-weight: 700;
@@ -435,6 +463,81 @@ html, body {
   font-size: 11px;
   color: var(--text-ter);
   text-align: center;
+}
+
+#settings-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 16px 0 12px;
+}
+
+#version-info {
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--text-ter);
+  text-align: center;
+}
+
+/* ===== UPDATE MODAL ===== */
+#update-mask {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+#update-mask:not(.hidden) {
+  opacity: 1;
+}
+
+#update-modal {
+  width: 360px;
+  background: #242424;
+  border-radius: 16px;
+  padding: 28px 24px 20px;
+  border: 1px solid var(--border);
+  text-align: center;
+  transform: translateY(10px) scale(0.97);
+  transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#update-mask:not(.hidden) #update-modal {
+  transform: translateY(0) scale(1);
+}
+
+#update-icon {
+  font-size: 36px;
+  margin-bottom: 12px;
+}
+
+#update-modal h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--orange);
+  margin-bottom: 8px;
+}
+
+#update-version {
+  font-size: 13px;
+  color: var(--text-sec);
+  margin-bottom: 4px;
+}
+
+#update-changelog {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+#update-actions {
+  display: flex;
+  gap: 10px;
 }
 
 /* ===== SCROLLBAR ===== */

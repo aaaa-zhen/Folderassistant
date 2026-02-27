@@ -17,6 +17,8 @@ declare global {
       loadSettings: () => Promise<{ apiKey: string; baseUrl: string; model: string; disableNonessentialTraffic: boolean }>;
       saveSettings: (s: any) => Promise<{ success: boolean }>;
       getModels: () => Promise<{ id: string; name: string }[]>;
+      checkForUpdates: () => Promise<{ hasUpdate: boolean; currentVersion: string; latestVersion?: string; changelog?: string; downloadUrl?: string }>;
+      openDownloadUrl: (url: string) => Promise<void>;
     };
   }
 }

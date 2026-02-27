@@ -22,4 +22,8 @@ contextBridge.exposeInMainWorld('folderAssistant', {
   loadSettings: () => ipcRenderer.invoke('settings:load'),
   saveSettings: (s: any) => ipcRenderer.invoke('settings:save', s),
   getModels: () => ipcRenderer.invoke('settings:models'),
+
+  // Updater
+  checkForUpdates: () => ipcRenderer.invoke('updater:check'),
+  openDownloadUrl: (url: string) => ipcRenderer.invoke('updater:openDownload', url),
 });
