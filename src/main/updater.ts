@@ -15,8 +15,8 @@ export interface UpdateInfo {
 
 function fetchJSON(url: string): Promise<any> {
   return new Promise((resolve, reject) => {
-    const client = url.startsWith('https') ? https : http;
-    const req = client.get(url, { timeout: 8000 }, (res) => {
+    const getter = url.startsWith('https') ? https.get : http.get;
+    const req = getter(url, { timeout: 8000 }, (res: any) => {
       let data = '';
       res.on('data', (chunk: string) => { data += chunk; });
       res.on('end', () => {

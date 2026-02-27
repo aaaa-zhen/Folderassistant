@@ -1,11 +1,62 @@
 import { ipcMain, dialog, app, shell, IpcMainInvokeEvent, IpcMainEvent } from 'electron';
-import * as pty from 'node-pty';
 import path from 'path';
+import fs from 'fs';
+import os from 'os';
 import { detectClaude } from './claude-detector';
 import { loadSettings, saveSettings, getAvailableModels, AppSettings } from './settings';
 import { checkForUpdates } from './updater';
 
-const ptyProcesses = new Map<number, pty.IPty>();
+// Lazy-load node-pty with detailed error reporting
+let pty: typeof import('node-pty');
+let ptyLoadError: string | null = null;
+
+try {
+  pty = require('node-pty');
+} catch (e: any) {
+  ptyLoadError = `Failed to load node-pty: ${e.message}\nStack: ${e.stack}`;
+  // Write detailed error log
+  try {
+    const logPath = path.join(os.tmpdir(), 'folder-assistant-pty-error.log');
+    const info = [
+      `Error: ${e.message}`,
+      `Stack: ${e.stack}`,
+      `Platform: ${process.platform} ${process.arch}`,
+      `Electron: ${process.versions.electron}`,
+      `Node: ${process.version}`,
+      `__dirname: ${__dirname}`,
+      `app.getAppPath: ${app.getAppPath()}`,
+      `Checking paths:`,
+    ];
+    // Check if node-pty files exist
+    const possiblePaths = [
+      path.join(__dirname, 'node_modules', 'node-pty'),
+      path.join(__dirname, '..', 'node_modules', 'node-pty'),
+      path.join(__dirname, '..', '..', 'node_modules', 'node-pty'),
+      path.join(app.getAppPath(), 'node_modules', 'node-pty'),
+      path.join(app.getAppPath(), '.webpack', 'main', 'node_modules', 'node-pty'),
+    ];
+    for (const p of possiblePaths) {
+      info.push(`  ${fs.existsSync(p) ? 'EXISTS' : 'MISSING'}: ${p}`);
+      if (fs.existsSync(p)) {
+        try {
+          const pkg = path.join(p, 'package.json');
+          if (fs.existsSync(pkg)) info.push(`    package.json: EXISTS`);
+          const lib = path.join(p, 'lib', 'index.js');
+          if (fs.existsSync(lib)) info.push(`    lib/index.js: EXISTS`);
+          const prebuilds = path.join(p, 'prebuilds', `${process.platform}-${process.arch}`);
+          if (fs.existsSync(prebuilds)) {
+            info.push(`    prebuilds/${process.platform}-${process.arch}: EXISTS`);
+            info.push(`    contents: ${fs.readdirSync(prebuilds).join(', ')}`);
+          }
+        } catch {}
+      }
+    }
+    fs.writeFileSync(logPath, info.join('\n') + '\n');
+  } catch {}
+}
+
+type PtyProcess = import('node-pty').IPty;
+const ptyProcesses = new Map<number, PtyProcess>();
 
 export function registerIpcHandlers(): void {
   ipcMain.handle('claude:detect', () => {
@@ -27,6 +78,11 @@ export function registerIpcHandlers(): void {
   });
 
   ipcMain.handle('pty:spawn', (event: IpcMainInvokeEvent, folderPath: string) => {
+    // Check if node-pty loaded successfully
+    if (ptyLoadError || !pty) {
+      throw new Error(`node-pty 加载失败: ${ptyLoadError || 'unknown error'}\n\n日志文件: ${path.join(os.tmpdir(), 'folder-assistant-pty-error.log')}`);
+    }
+
     const webContents = event.sender;
     const windowId = webContents.id;
 

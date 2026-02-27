@@ -194,8 +194,23 @@ async function init(): Promise<void> {
     terminalView.classList.remove('hidden');
 
     terminalManager = new TerminalManager(terminalContainer);
-    await terminalManager.start(folder);
-    terminalManager.focus();
+    try {
+      await terminalManager.start(folder);
+      terminalManager.focus();
+    } catch (e: any) {
+      errorOverlay.classList.remove('hidden');
+      const msg = e.message || '终端启动失败';
+      errorMessage.style.whiteSpace = 'pre-wrap';
+      errorMessage.style.wordBreak = 'break-all';
+      errorMessage.style.fontSize = '12px';
+      errorMessage.style.textAlign = 'left';
+      errorMessage.style.maxHeight = '300px';
+      errorMessage.style.overflow = 'auto';
+      errorMessage.textContent = msg;
+      // Switch back to show error properly
+      terminalView.classList.add('hidden');
+      welcomeView.classList.remove('hidden');
+    }
   }
 
   // Update modal elements
