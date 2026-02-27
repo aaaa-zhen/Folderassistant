@@ -21,7 +21,7 @@ export async function installContextMenu(): Promise<RegistryResult> {
       : `"${exePath}" "${app.getAppPath()}"`;
 
     for (const key of [KEY_FOLDER, KEY_BACKGROUND]) {
-      execSync(`reg add "${key}" /ve /d "Open with Claude Code" /f`, { stdio: 'pipe' });
+      execSync(`reg add "${key}" /ve /d "用 Claude Code 打开" /f`, { stdio: 'pipe' });
       execSync(`reg add "${key}" /v Icon /d "${exePath}" /f`, { stdio: 'pipe' });
       execSync(`reg add "${key}\\command" /ve /d "${appPath} \\"%V\\"" /f`, { stdio: 'pipe' });
     }

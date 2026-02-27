@@ -19,7 +19,7 @@ module.exports = {
   packagerConfig: {
     asar: false,
     icon: path.resolve(__dirname, 'assets', 'icon'),
-    name: 'Folder Assistant',
+    name: '文件夹助手',
   },
   hooks: {
     packageAfterCopy: async (_config, buildPath) => {

@@ -64,7 +64,7 @@ export function detectClaude(): ClaudeDetectionResult {
     found: false,
     mode: 'none',
     claudePath: null,
-    error: 'Claude CLI not found and bundled package is missing.',
+    error: '未找到 Claude CLI，内置包也缺失。',
   };
 }
 

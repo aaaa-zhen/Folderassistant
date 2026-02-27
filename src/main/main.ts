@@ -51,7 +51,7 @@ if (!gotTheLock) {
         // ignore in dev
       }
     }
-    app.setName('Folder Assistant');
+    app.setName('文件夹助手');
 
     registerIpcHandlers();
     setupTray();

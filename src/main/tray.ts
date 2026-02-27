@@ -7,7 +7,7 @@ let tray: Tray | null = null;
 export function setupTray(): Tray {
   const icon = createTrayIcon();
   tray = new Tray(icon);
-  tray.setToolTip('Folder Assistant — Claude Code Launcher');
+  tray.setToolTip('文件夹助手 — Claude Code 启动器');
   tray.setContextMenu(buildTrayMenu());
 
   tray.on('double-click', () => {
@@ -22,7 +22,7 @@ function buildTrayMenu(): Menu {
 
   const template: Electron.MenuItemConstructorOptions[] = [
     {
-      label: 'Open Folder...',
+      label: '打开文件夹...',
       click: () => openFolderPicker(),
     },
     { type: 'separator' },
@@ -31,24 +31,24 @@ function buildTrayMenu(): Menu {
   if (isWindows) {
     template.push(
       {
-        label: 'Install Context Menu',
+        label: '安装右键菜单',
         click: async () => {
           const result = await installContextMenu();
           if (result.success) {
-            dialog.showMessageBox({ type: 'info', title: 'Done', message: 'Right-click context menu installed.' });
+            dialog.showMessageBox({ type: 'info', title: '完成', message: '右键菜单已安装。' });
           } else {
-            dialog.showErrorBox('Error', result.error || 'Failed to install context menu.');
+            dialog.showErrorBox('错误', result.error || '安装右键菜单失败。');
           }
         },
       },
       {
-        label: 'Remove Context Menu',
+        label: '卸载右键菜单',
         click: async () => {
           const result = await uninstallContextMenu();
           if (result.success) {
-            dialog.showMessageBox({ type: 'info', title: 'Done', message: 'Right-click context menu removed.' });
+            dialog.showMessageBox({ type: 'info', title: '完成', message: '右键菜单已卸载。' });
           } else {
-            dialog.showErrorBox('Error', result.error || 'Failed to remove context menu.');
+            dialog.showErrorBox('错误', result.error || '卸载右键菜单失败。');
           }
         },
       },
@@ -57,7 +57,7 @@ function buildTrayMenu(): Menu {
   }
 
   template.push({
-    label: 'Quit',
+    label: '退出',
     click: () => app.quit(),
   });
 
@@ -67,7 +67,7 @@ function buildTrayMenu(): Menu {
 async function openFolderPicker(): Promise<void> {
   const result = await dialog.showOpenDialog({
     properties: ['openDirectory'],
-    title: 'Select Folder to Open with Claude Code',
+    title: '选择文件夹',
   });
 
   if (!result.canceled && result.filePaths.length > 0) {

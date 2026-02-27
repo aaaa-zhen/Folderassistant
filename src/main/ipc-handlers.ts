@@ -80,7 +80,7 @@ export function registerIpcHandlers(): void {
         shellArgs = [detection.claudePath];
       }
     } else {
-      throw new Error('Claude CLI not available');
+      throw new Error('Claude CLI 不可用');
     }
 
     // Log spawn info for debugging

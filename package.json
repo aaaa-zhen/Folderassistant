@@ -1,6 +1,6 @@
 {
   "name": "folder-assistant",
-  "productName": "Folder Assistant",
+  "productName": "文件夹助手",
   "version": "1.0.0",
   "description": "Launch Claude Code in any folder with a visual terminal",
   "author": "aaaa-zhen",
