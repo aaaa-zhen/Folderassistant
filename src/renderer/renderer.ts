@@ -64,7 +64,11 @@ async function init(): Promise<void> {
   const terminalContainer = document.getElementById('terminal-container') as HTMLDivElement;
   const topFolderName = document.getElementById('top-folder-name') as HTMLSpanElement;
   const errorOverlay = document.getElementById('error-overlay') as HTMLDivElement;
+  const errorTitle = document.getElementById('error-title') as HTMLHeadingElement;
   const errorMessage = document.getElementById('error-message') as HTMLParagraphElement;
+  const installBox = document.getElementById('install-box') as HTMLDivElement;
+  const installHint = document.getElementById('install-hint') as HTMLParagraphElement;
+  const installLink = document.getElementById('install-link') as HTMLElement;
 
   const inputBar = document.getElementById('input-bar') as HTMLDivElement;
   const btnFolder = document.getElementById('btn-folder') as HTMLButtonElement;
@@ -185,7 +189,11 @@ async function init(): Promise<void> {
 
     if (!detection.found) {
       errorOverlay.classList.remove('hidden');
+      errorTitle.textContent = '未找到 Claude CLI';
       errorMessage.textContent = detection.error || 'Claude CLI 未找到。';
+      installHint.textContent = '请先安装 Claude Code：';
+      installLink.textContent = 'npm install -g @anthropic-ai/claude-code';
+      installBox.classList.remove('hidden');
       return;
     }
 
@@ -198,8 +206,8 @@ async function init(): Promise<void> {
       await terminalManager.start(folder);
       terminalManager.focus();
     } catch (e: any) {
-      errorOverlay.classList.remove('hidden');
       const msg = e.message || '终端启动失败';
+      errorOverlay.classList.remove('hidden');
       errorMessage.style.whiteSpace = 'pre-wrap';
       errorMessage.style.wordBreak = 'break-all';
       errorMessage.style.fontSize = '12px';
@@ -207,6 +215,8 @@ async function init(): Promise<void> {
       errorMessage.style.maxHeight = '300px';
       errorMessage.style.overflow = 'auto';
       errorMessage.textContent = msg;
+      errorTitle.textContent = '启动失败';
+      installBox.classList.add('hidden');
       // Switch back to show error properly
       terminalView.classList.add('hidden');
       welcomeView.classList.remove('hidden');

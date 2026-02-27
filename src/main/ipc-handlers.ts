@@ -117,6 +117,24 @@ export function registerIpcHandlers(): void {
       env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
     }
 
+    // Windows: Claude Code requires Git Bash — auto-detect common paths
+    if (process.platform === 'win32' && !env.CLAUDE_CODE_GIT_BASH_PATH) {
+      const gitBashPaths = [
+        'C:\\Program Files\\Git\\bin\\bash.exe',
+        'C:\\Program Files (x86)\\Git\\bin\\bash.exe',
+        'D:\\Program Files\\Git\\bin\\bash.exe',
+        'D:\\Git\\bin\\bash.exe',
+        `${env.LOCALAPPDATA || ''}\\Programs\\Git\\bin\\bash.exe`,
+        `${env.ProgramW6432 || ''}\\Git\\bin\\bash.exe`,
+      ];
+      for (const p of gitBashPaths) {
+        if (p && fs.existsSync(p)) {
+          env.CLAUDE_CODE_GIT_BASH_PATH = p;
+          break;
+        }
+      }
+    }
+
     // Build extra CLI flags
     const extraFlags: string[] = [];
     if (settings.model) {

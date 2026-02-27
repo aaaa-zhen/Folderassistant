@@ -102,11 +102,11 @@
     <div id="error-overlay" class="hidden">
       <div id="error-content">
         <div id="error-icon">!</div>
-        <h2>未找到 Claude CLI</h2>
-        <p id="error-message">Claude CLI 未安装或不在系统 PATH 中。</p>
+        <h2 id="error-title">启动失败</h2>
+        <p id="error-message">未知错误</p>
         <div id="install-box">
-          <p>请先安装 Claude Code：</p>
-          <code>npm install -g @anthropic-ai/claude-code</code>
+          <p id="install-hint">请先安装 Git（Windows 必需）：</p>
+          <code id="install-link">https://git-scm.com/downloads/win</code>
         </div>
       </div>
     </div>
