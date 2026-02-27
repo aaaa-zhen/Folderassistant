@@ -68,11 +68,17 @@ export function registerIpcHandlers(): void {
         : ['-l', '-c', 'claude'];
     } else if (detection.mode === 'bundled' && detection.claudePath) {
       // Use Electron as Node.js to run the bundled CLI
-      shell = process.execPath;
-      shellArgs = [detection.claudePath];
       env.ELECTRON_RUN_AS_NODE = '1';
-      // Ensure ESM works: Node needs --experimental-vm-modules or correct package.json
       env.NODE_NO_WARNINGS = '1';
+
+      if (process.platform === 'win32') {
+        // On Windows, use cmd.exe to launch Electron-as-Node with proper quoting
+        shell = 'cmd.exe';
+        shellArgs = ['/c', `"${process.execPath}" "${detection.claudePath}"`];
+      } else {
+        shell = process.execPath;
+        shellArgs = [detection.claudePath];
+      }
     } else {
       throw new Error('Claude CLI not available');
     }
