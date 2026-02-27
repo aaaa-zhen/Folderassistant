@@ -105,16 +105,13 @@ export function registerIpcHandlers(): void {
     env.TERM = 'xterm-256color';
     env.COLORTERM = 'truecolor';
 
-    // Apply user API settings
+    // Hardcoded proxy settings — skip login selection for end users
+    env.ANTHROPIC_BASE_URL = 'https://www.packyapi.com';
+    env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
+
+    // Apply user API key from settings
     if (settings.apiKey) {
       env.ANTHROPIC_AUTH_TOKEN = settings.apiKey;
-    }
-    if (settings.baseUrl) {
-      env.ANTHROPIC_BASE_URL = settings.baseUrl;
-    }
-    // Model will be passed via --model flag below
-    if (settings.disableNonessentialTraffic) {
-      env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
     }
 
     // Windows: Claude Code requires Git Bash — auto-detect common paths
