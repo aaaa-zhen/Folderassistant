@@ -1,5 +1,6 @@
 import { ipcMain, dialog, app, shell, IpcMainInvokeEvent, IpcMainEvent } from 'electron';
 import * as pty from 'node-pty';
+import path from 'path';
 import { detectClaude } from './claude-detector';
 import { loadSettings, saveSettings, getAvailableModels, AppSettings } from './settings';
 import { checkForUpdates } from './updater';
@@ -77,9 +78,17 @@ export function registerIpcHandlers(): void {
       env.ELECTRON_RUN_AS_NODE = '1';
       env.NODE_NO_WARNINGS = '1';
 
-      // Spawn Electron exe directly (no cmd.exe — avoids quoting issues with special path chars)
+      // cli.js is ESM — write a temp CJS launcher that uses dynamic import()
+      const os = require('os');
+      const fs = require('fs');
+      const launcherPath = path.join(os.tmpdir(), 'fa-claude-launcher.cjs');
+      const cliFileUrl = 'file:///' + detection.claudePath.replace(/\\/g, '/');
+      fs.writeFileSync(launcherPath,
+        `import(${JSON.stringify(cliFileUrl)}).catch(e => { console.error(e); process.exit(1); });\n`
+      );
+
       shell = process.execPath;
-      shellArgs = [detection.claudePath, ...extraFlags];
+      shellArgs = [launcherPath, ...extraFlags];
     } else {
       throw new Error('Claude CLI 不可用');
     }
