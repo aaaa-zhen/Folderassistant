@@ -76,13 +76,9 @@ export function registerIpcHandlers(): void {
       env.ELECTRON_RUN_AS_NODE = '1';
       env.NODE_NO_WARNINGS = '1';
 
-      if (process.platform === 'win32') {
-        shell = 'cmd.exe';
-        shellArgs = ['/c', `"${process.execPath}" "${detection.claudePath}"${extraFlagsStr}`];
-      } else {
-        shell = process.execPath;
-        shellArgs = [detection.claudePath, ...extraFlags];
-      }
+      // Spawn Electron exe directly (no cmd.exe — avoids quoting issues with special path chars)
+      shell = process.execPath;
+      shellArgs = [detection.claudePath, ...extraFlags];
     } else {
       throw new Error('Claude CLI 不可用');
     }
