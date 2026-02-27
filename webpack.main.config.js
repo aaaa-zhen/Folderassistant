@@ -1,5 +1,12 @@
 module.exports = {
   entry: './src/main/main.ts',
+  externals: {
+    'node-pty': 'commonjs node-pty',
+  },
+  node: {
+    __dirname: false,
+    __filename: false,
+  },
   module: {
     rules: [
       {
@@ -8,20 +15,6 @@ module.exports = {
         use: {
           loader: 'ts-loader',
           options: { transpileOnly: true },
-        },
-      },
-      {
-        test: /\.node$/,
-        use: 'node-loader',
-      },
-      {
-        test: /[/\\]node_modules[/\\].+\.(m?js|node)$/,
-        parser: { amd: false },
-        use: {
-          loader: '@vercel/webpack-asset-relocator-loader',
-          options: {
-            outputAssetBase: 'native_modules',
-          },
         },
       },
     ],

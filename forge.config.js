@@ -6,7 +6,12 @@ function copyDirSync(src, dest) {
   for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
-    const realSrc = fs.realpathSync(srcPath);
+    let realSrc;
+    try {
+      realSrc = fs.realpathSync(srcPath);
+    } catch {
+      continue; // skip broken symlinks
+    }
     if (fs.statSync(realSrc).isDirectory()) {
       copyDirSync(realSrc, destPath);
     } else {
@@ -15,40 +20,64 @@ function copyDirSync(src, dest) {
   }
 }
 
+function findAppDir(outputPaths) {
+  // outputPaths is an array of output directories from electron-packager
+  for (const p of outputPaths) {
+    // macOS: look for .app/Contents/Resources/app
+    const macApp = path.join(p, fs.readdirSync(p).find(f => f.endsWith('.app')) || '', 'Contents', 'Resources', 'app');
+    if (fs.existsSync(macApp)) return macApp;
+    // Windows/Linux: resources/app
+    const winApp = path.join(p, 'resources', 'app');
+    if (fs.existsSync(winApp)) return winApp;
+  }
+  return null;
+}
+
 module.exports = {
   packagerConfig: {
     asar: false,
     icon: path.resolve(__dirname, 'assets', 'icon'),
-    name: '文件夹助手',
+    name: 'FolderAssistant',
   },
   hooks: {
-    packageAfterCopy: async (_config, buildPath) => {
-      // Copy node-pty native module to both locations:
-      // 1. app/node_modules/ — for normal require resolution
-      // 2. app/.webpack/main/node_modules/ — where webpack externals actually look
+    postPackage: async (_config, result) => {
+      const appDir = findAppDir(result.outputPaths);
+      if (!appDir) {
+        console.error('[hook] Could not find app directory in output!');
+        return;
+      }
+      console.log(`[hook] App directory: ${appDir}`);
+
+      // Copy node-pty to .webpack/main/node_modules/ (where webpack externals resolve)
       const ptySrc = path.resolve(__dirname, 'node_modules', 'node-pty');
+      const ptyDest = path.join(appDir, '.webpack', 'main', 'node_modules', 'node-pty');
+      console.log(`[hook] Copying node-pty to ${ptyDest}`);
+      copyDirSync(ptySrc, ptyDest);
 
-      const ptyDest1 = path.join(buildPath, 'node_modules', 'node-pty');
-      console.log(`[hook] Copying node-pty to ${ptyDest1}`);
-      copyDirSync(ptySrc, ptyDest1);
+      // Also copy to app/node_modules for general require resolution
+      const ptyDest2 = path.join(appDir, 'node_modules', 'node-pty');
+      if (!fs.existsSync(ptyDest2)) {
+        console.log(`[hook] Copying node-pty to ${ptyDest2}`);
+        copyDirSync(ptySrc, ptyDest2);
+      }
 
-      const ptyDest2 = path.join(buildPath, '.webpack', 'main', 'node_modules', 'node-pty');
-      console.log(`[hook] Copying node-pty to ${ptyDest2}`);
-      copyDirSync(ptySrc, ptyDest2);
-
-      // Copy @anthropic-ai/claude-code so bundled CLI works
+      // Copy @anthropic-ai/claude-code for bundled CLI
       const claudeSrc = path.resolve(__dirname, 'node_modules', '@anthropic-ai', 'claude-code');
-      const claudeDest = path.join(buildPath, 'node_modules', '@anthropic-ai', 'claude-code');
-      console.log(`[hook] Copying @anthropic-ai/claude-code to ${claudeDest}`);
-      copyDirSync(claudeSrc, claudeDest);
+      const claudeDest = path.join(appDir, 'node_modules', '@anthropic-ai', 'claude-code');
+      if (!fs.existsSync(claudeDest)) {
+        console.log(`[hook] Copying @anthropic-ai/claude-code to ${claudeDest}`);
+        copyDirSync(claudeSrc, claudeDest);
+      }
 
-      // Copy @img/sharp-* optional dependencies (needed by claude-code on each platform)
+      // Copy @img/sharp-* optional dependencies
       const imgDir = path.resolve(__dirname, 'node_modules', '@img');
-      const imgDest = path.join(buildPath, 'node_modules', '@img');
-      if (fs.existsSync(imgDir)) {
+      const imgDest = path.join(appDir, 'node_modules', '@img');
+      if (fs.existsSync(imgDir) && !fs.existsSync(imgDest)) {
         console.log(`[hook] Copying @img/* to ${imgDest}`);
         copyDirSync(imgDir, imgDest);
       }
+
+      console.log('[hook] All native modules copied successfully');
     },
   },
   makers: [

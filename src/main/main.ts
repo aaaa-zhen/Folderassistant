@@ -1,7 +1,7 @@
 import { app, nativeImage } from 'electron';
 import path from 'path';
 import { setupTray } from './tray';
-import { createTerminalWindow } from './windows';
+import { createTerminalWindow, createWelcomeWindow } from './windows';
 import { registerIpcHandlers } from './ipc-handlers';
 
 // Handle Squirrel events (Windows installer)
@@ -59,6 +59,8 @@ if (!gotTheLock) {
     const folderPath = extractFolderPath(process.argv);
     if (folderPath) {
       createTerminalWindow(folderPath);
+    } else {
+      createWelcomeWindow();
     }
   });
 }

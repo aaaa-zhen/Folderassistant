@@ -76,50 +76,47 @@ async function openFolderPicker(): Promise<void> {
 }
 
 function createTrayIcon(): Electron.NativeImage {
-  // 16x16 monochrome folder icon for menu bar / system tray
-  // 0 = transparent, 1 = icon color (white on dark, black on light — handled by template)
-  const pixels = [
+  // 16x16 pixel art folder icon matching the app logo
+  const ICON_DATA = [
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
-    [0,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0],
-    [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,0],
-    [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+    [0,0,2,2,2,2,2,0,0,0,0,0,0,0,0,0],
+    [0,2,1,1,1,1,1,2,2,2,2,2,2,2,0,0],
+    [0,2,1,1,1,1,1,1,1,1,1,1,1,2,0,0],
+    [0,2,1,1,1,1,1,1,1,1,1,1,1,2,0,0],
+    [0,2,1,1,4,1,1,1,1,1,1,1,1,2,0,0],
+    [0,2,1,1,1,4,1,1,1,5,5,1,1,2,0,0],
+    [0,2,1,1,1,1,4,1,1,1,1,5,1,2,0,0],
+    [0,2,1,1,1,4,1,1,1,1,5,1,1,2,0,0],
+    [0,2,1,1,4,1,1,1,1,5,1,1,1,2,0,0],
+    [0,2,1,1,1,1,1,1,1,1,1,1,1,2,0,0],
+    [0,2,1,1,1,1,1,1,1,1,1,1,1,2,0,0],
+    [0,2,3,3,3,3,3,3,3,3,3,3,3,2,0,0],
+    [0,0,2,2,2,2,2,2,2,2,2,2,2,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
     [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
   ];
+
+  const PALETTE: Record<number, [number, number, number, number]> = {
+    0: [0, 0, 0, 0],
+    1: [232, 160, 56, 255],
+    2: [212, 130, 40, 255],
+    3: [180, 100, 30, 255],
+    4: [255, 200, 60, 255],
+    5: [30, 30, 40, 255],
+  };
 
   const size = 16;
   const buf = Buffer.alloc(size * size * 4);
   for (let y = 0; y < size; y++) {
     for (let x = 0; x < size; x++) {
       const i = (y * size + x) * 4;
-      if (pixels[y][x] === 1) {
-        // On macOS template images use black pixels; the OS inverts for dark mode
-        // On Windows use white pixels for dark taskbar
-        if (process.platform === 'darwin') {
-          buf[i] = 0x00; buf[i+1] = 0x00; buf[i+2] = 0x00; buf[i+3] = 0xff;
-        } else {
-          buf[i] = 0xff; buf[i+1] = 0xff; buf[i+2] = 0xff; buf[i+3] = 0xff;
-        }
-      } else {
-        buf[i] = 0x00; buf[i+1] = 0x00; buf[i+2] = 0x00; buf[i+3] = 0x00;
-      }
+      const c = PALETTE[ICON_DATA[y][x]];
+      buf[i] = c[0];
+      buf[i + 1] = c[1];
+      buf[i + 2] = c[2];
+      buf[i + 3] = c[3];
     }
   }
 
-  const icon = nativeImage.createFromBuffer(buf, { width: size, height: size });
-  // Mark as template image on macOS so it adapts to light/dark menu bar
-  if (process.platform === 'darwin') {
-    icon.setTemplateImage(true);
-  }
-  return icon;
+  return nativeImage.createFromBuffer(buf, { width: size, height: size });
 }
