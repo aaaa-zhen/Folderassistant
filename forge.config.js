@@ -23,11 +23,18 @@ module.exports = {
   },
   hooks: {
     packageAfterCopy: async (_config, buildPath) => {
-      // Copy node-pty native module
+      // Copy node-pty native module to both locations:
+      // 1. app/node_modules/ — for normal require resolution
+      // 2. app/.webpack/main/node_modules/ — where webpack externals actually look
       const ptySrc = path.resolve(__dirname, 'node_modules', 'node-pty');
-      const ptyDest = path.join(buildPath, 'node_modules', 'node-pty');
-      console.log(`[hook] Copying node-pty to ${ptyDest}`);
-      copyDirSync(ptySrc, ptyDest);
+
+      const ptyDest1 = path.join(buildPath, 'node_modules', 'node-pty');
+      console.log(`[hook] Copying node-pty to ${ptyDest1}`);
+      copyDirSync(ptySrc, ptyDest1);
+
+      const ptyDest2 = path.join(buildPath, '.webpack', 'main', 'node_modules', 'node-pty');
+      console.log(`[hook] Copying node-pty to ${ptyDest2}`);
+      copyDirSync(ptySrc, ptyDest2);
 
       // Copy @anthropic-ai/claude-code so bundled CLI works
       const claudeSrc = path.resolve(__dirname, 'node_modules', '@anthropic-ai', 'claude-code');
